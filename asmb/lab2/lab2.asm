@@ -1,7 +1,4 @@
-section .data
-    a dd 0
-    b dd 0
-    d dd 0
+section .data 
     prompt_a db "Enter a: ", 0
     prompt_b db "Enter b: ", 0
     prompt_d db "Enter d: ", 0
@@ -10,7 +7,10 @@ section .data
 
 section .bss
     input_buffer resb 10 
-    output_buffer resb 10 
+    output_buffer resb 10
+    a resd 1
+    b resd 1
+    d resd 1
     c resd 1  
 
 section .text
