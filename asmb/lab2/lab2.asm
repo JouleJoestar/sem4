@@ -5,6 +5,8 @@ section .data
     prompt_a db "Enter a: ", 0
     prompt_b db "Enter b: ", 0
     prompt_d db "Enter d: ", 0
+    res db "Result: ", 0
+    lenRes equ $-res
 
 section .bss
     input_buffer resb 10 
@@ -87,6 +89,12 @@ _start:
     mov esi, output_buffer ; загрузка адреса буфера вывода 
     mov eax, [c]          ; загрузка числа в регистр   
     call IntToStr         ; вызов подпрограммы IntToStr
+
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, res 
+    mov edx, lenRes          
+    int 0x80
 
     ; Вывод строки результата
     mov eax, 4
