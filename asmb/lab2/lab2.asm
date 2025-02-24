@@ -2,13 +2,14 @@ section .data
     a dd 0
     b dd 0
     d dd 0
-    c dd 0
-    input_buffer db 16 dup(0)
-    output_buffer db 16 dup(0)
     prompt_a db "Enter a: ", 0
     prompt_b db "Enter b: ", 0
     prompt_d db "Enter d: ", 0
-    result_msg db "Result (c): ", 0
+
+section .bss
+    input_buffer resb 10 
+    output_buffer resb 10 
+    c resd 1  ; Изменено на resd для 4 байт
 
 section .text
     global _start
@@ -83,21 +84,15 @@ _start:
     mov [c], ecx
 
     ; Преобразование результата в строку
-    mov eax, [c]
-    mov esi, output_buffer
-    call IntToStr
+    mov esi, output_buffer ; загрузка адреса буфера вывода 
+    mov eax, [c]          ; загрузка числа в регистр   
+    call IntToStr         ; Вызываем подпрограмму IntToStr
 
-    ; Вывод результата
+    ; Вывод строки результата
     mov eax, 4
     mov ebx, 1
-    mov ecx, result_msg
-    mov edx, 12
-    int 0x80
-
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, output_buffer
-    mov edx, 16
+    mov ecx, output_buffer ; Указываем адрес буфера с результатом
+    mov edx, eax           ; Используем длину строки, возвращенную IntToStr
     int 0x80
 
     ; Завершение программы
