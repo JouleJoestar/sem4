@@ -9,12 +9,12 @@ section .data
 section .bss
     input_buffer resb 10 
     output_buffer resb 10 
-    c resd 1  ; Изменено на resd для 4 байт
+    c resd 1  
 
 section .text
     global _start
 
-%include "./lib.asm"
+%include "./lib.asm" ; либа с преобразованиями
 
 _start:
     ; Ввод значения a
@@ -68,7 +68,7 @@ _start:
     call StrToInt
     mov [d], eax
 
-    ; Вычисление выражения c = (a + b) / d - d * d * a - b
+    ; Математика
     mov eax, [a]
     add eax, [b]
     cdq
@@ -86,16 +86,16 @@ _start:
     ; Преобразование результата в строку
     mov esi, output_buffer ; загрузка адреса буфера вывода 
     mov eax, [c]          ; загрузка числа в регистр   
-    call IntToStr         ; Вызываем подпрограмму IntToStr
+    call IntToStr         ; вызов подпрограммы IntToStr
 
     ; Вывод строки результата
     mov eax, 4
     mov ebx, 1
-    mov ecx, output_buffer ; Указываем адрес буфера с результатом
-    mov edx, eax           ; Используем длину строки, возвращенную IntToStr
+    mov ecx, output_buffer 
+    mov edx, eax          
     int 0x80
 
-    ; Завершение программы
+    ; конец
     mov eax, 1
     xor ebx, ebx
     int 0x80
