@@ -1,0 +1,29 @@
+unit Unit1;
+interface
+Type pt=^rec;
+     rec=record
+             n:real;
+           ptr:pt;
+         end;
+Var s,p,d:pt;
+    f:pointer;
+    fl:boolean; {признак того,что запись уже вставлена}
+    k:longint;
+    x:real;
+    Bw:pt;
+
+Procedure OutSp(fs:pointer);
+
+implementation
+  //Вывод списка
+Procedure OutSp(fs:pointer);
+begin
+  s:=fs; { устанавливаем на первую запись }
+     while s<>nil do
+         begin
+         writeln(s^.n:10:5);
+           s:=s^.ptr;
+         end;
+end;
+
+end.
