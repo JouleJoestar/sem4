@@ -1,104 +1,162 @@
 #include <iostream>
+#include <string>
 #include <vector>
-#include "list.h"
+#include <chrono>
+#include <fstream>
+#include <cstdlib>
 
 using namespace std;
+using namespace chrono;
 
-// Функция для двоичного поиска
-int binarySearch(const vector<Material>& table, int key) {
+struct Material {
+    int code;           
+    string date;       
+    int warehouse;      
+    int quantity;       
+    double cost;        
+};
+
+struct Arr {
+    int size;
+    Material* arr;    
+    int* indexes;
+    long long comparisons = 0;
+    long long cycles = 0;
+
+    Arr(int k) {
+        this->size = k;
+        arr = new Material[k];
+        indexes = new int[k];
+        for (int i = 0; i < k; i++) {
+            arr[i] = { i + 1, "2023-01-01", rand() % 10, rand() % 100, (double)(rand() % 100000) / 100.0 };
+            indexes[i] = 1;
+            cycles += 2;
+        }
+    }
+
+    ~Arr() {
+        delete[] arr;
+        delete[] indexes;
+    }
+};
+
+Material* FindByDetailCode(Arr* Obj, int code) {
+    Obj->comparisons = 0;
+    Obj->cycles += 2; 
+    for (int i = 0; i < Obj->size; i++) {
+        Obj->comparisons++;
+        Obj->cycles += 4; 
+        if (Obj->indexes[i] && Obj->arr[i].code == code) {
+            return &Obj->arr[i];
+        }
+    }
+    return nullptr;
+}
+//cортировка вставкой, изначальный вариант
+void insertionSort(Arr* Obj) {
+    Obj->comparisons = 0;
+    Obj->cycles = 0;
+    int n = Obj->size;
+    Material* v = Obj->arr;
+    for (int i = 1; i < n; i++) {
+        Material key = v[i];
+        int j = i - 1;
+
+        while (j >= 0 && Obj->indexes[j] && v[j].cost > key.cost) {
+            v[j + 1] = v[j];
+            j--;
+            Obj->comparisons++;
+            Obj->cycles += 4;
+        }
+        v[j + 1] = key;
+        Obj->cycles += 2;
+    }
+}
+//бин поиск, изначальный вариант
+int binarySearch(Arr* Obj, int key) {
     int low = 0;
-    int high = table.size() - 1;
+    int high = Obj->size - 1;
 
     while (low <= high) {
         int mid = low + (high - low) / 2;
 
-        if (table[mid].code == key) {
-            return mid;  // результат поиска
-        } else if (table[mid].code < key) {
+        Obj->comparisons++;
+        Obj->cycles += 4;
+        if (Obj->indexes[mid] && Obj->arr[mid].code == key) {
+            return mid;  
+        } else if (Obj->indexes[mid] && Obj->arr[mid].code < key) {
             low = mid + 1;
         } else {
             high = mid - 1;
         }
     }
 
-    return -1;  //материал не найден
+    return -1;  
 }
-
-// Функция для сортировки вставкой
-void insertionSort(vector<Material>& table) {
-    int n = table.size();
-    for (int i = 1; i < n; i++) {
-        Material key = table[i];
-        int j = i - 1;
-
-        while (j >= 0 && table[j].cost > key.cost) {
-            table[j + 1] = table[j];
-            j--;
-        }
-        table[j + 1] = key; 
+//удаление маркировкой, изначальный вариант
+void Delete(int index, Arr* Obj) {
+    if (index >= 0 && index < Obj->size) {
+        Obj->indexes[index] = 0;
+        Obj->cycles += 2; 
     }
 }
 
-//удаление маркировкой
-void deleteMaterial(vector<Material>& table, int code) {
-    for (auto& material : table) {
-        if (material.code == code) {
-            material.code = 0; 
-            material.date = "";  
-	    material.warehouse = 0;
-            material.quantity = 0;
-            material.cost = 0.0;
-            cout << "Материал с кодом " << code << " был удален." << endl;
-            return;
+void logResults(const string& filename, const vector<vector<string>>& data) {
+    ofstream file(filename);
+    for (const auto& row : data) {
+        for (size_t i = 0; i < row.size(); i++) {
+            file << row[i];
+            if (i < row.size() - 1) file << ",";
         }
+        file << "\n";
     }
-   cout << "Материал с кодом " << code << " не найден." << endl;
+    file.close();
 }
 
 int main() {
+    vector<int> sizes = { 10, 25, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000 };
+    vector<vector<string>> searchResults = { {"Size", "Time (ms)", "Comparisons", "Cycles"} };
+    vector<vector<string>> sortResults = { {"Size", "Time (ms)", "Comparisons", "Cycles"} };
+    vector<vector<string>> deleteResults = { {"Size", "Index", "Comparisons", "Cycles"} }; 
 
-    vector<Material> table = getMaterials();  
+    for (int size : sizes) {
+        Arr Obj(size);
 
-    //проверка бинарного поиска
-    int key;
-    cout << "Введите код материала: ";
-    cin >> key;
+        auto start = high_resolution_clock::now();
+        insertionSort(&Obj);
+        auto end = high_resolution_clock::now();
+        sortResults.push_back({ to_string(size), to_string(duration_cast<milliseconds>(end - start).count()), to_string(Obj.comparisons), to_string(Obj.cycles) });
 
-    int index = binarySearch(table, key);
+        Obj.comparisons = 0;
+        Obj.cycles = 0;
+        int searchKey = Obj.arr[size / 2].code;      
+        start = high_resolution_clock::now();
+        int index = binarySearch(&Obj, searchKey);
+        end = high_resolution_clock::now();
+        searchResults.push_back({ to_string(size), to_string(duration_cast<milliseconds>(end - start).count()), to_string(Obj.comparisons), to_string(Obj.cycles) });
 
-    if (index != -1) {
-        cout << "Запись найдена: Код: " << table[index].code << ", Дата: " << table[index].date
-             << ", Склад: " << table[index].warehouse << ", Количество: " << table[index].quantity
-             << ", Стоимость: " << table[index].cost << endl;
-    } else {
-        cout << "Запись с кодом " << key << " не найдена." << endl;
+        if (index != -1) {
+            cout << index << endl; //резульат поиска 
+        }
+
+        int deleteIndex = size / 4; 
+        start = high_resolution_clock::now();
+        Delete(deleteIndex, &Obj);
+        end = high_resolution_clock::now();
+        deleteResults.push_back({ to_string(size), to_string(deleteIndex), to_string(Obj.comparisons), to_string(Obj.cycles) }); 
+       
     }
 
-    //удаляем материал
-    int deleteKey;
-    cout << "Введите код материала для удаления: ";
-    cin >> deleteKey;
-    deleteMaterial(table, deleteKey);
+    logResults("search_results.csv", searchResults);
+    logResults("sort_results.csv", sortResults);
+    logResults("delete_results.csv", deleteResults); 
 
-    //проверка сортировки(по цене)
-    insertionSort(table);
-    
-    cout << endl;
-    cout << "Отсортированный массив по стоимости:" << endl; 
-    for (int i = 0; i < 10; i++) {
-    // for (const auto& material : table) { // если вывести всё
-	if (table[i].code != 0) { // проверка наличия материала(по коду)
-        cout << "Код: " << table[i].code << ", Дата: " << table[i].date
-             << ", Склад: " << table[i].warehouse << ", Количество: " << table[i].quantity
-             << ", Стоимость: " << table[i].cost << endl;
-    	}
-    }
+    Material mat = {2, "2023-01-01", 2, 2, 2.0};
 
-    std::string date = "2023-01-01"; 
-    vector<int> test = {};
-    size_t length = sizeof(date);
-    int structlen = sizeof(test);	
-    std::cout << length << " "<<structlen<<std::endl;
+    cout << sizeof(mat) << endl;
+
+    Arr emptyarr(0);
+    cout << "Размер пустого Arr: " << sizeof(emptyarr) << " байт" << endl;
 
     return 0;
 }
