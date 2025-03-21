@@ -1,16 +1,16 @@
 section .data 
     prompt_a db "Enter: ", 0
-    outArr db "Your array: ", 10
+
+    outArr db "Your array: ", 0
     lenOut equ $-outArr
     res db "Columns sum: ", 0
     lenRes equ $-res
-    newline db 10, 0 ; новая строка
 
 section .bss
-    input_buffer resb 20 
-    output_buffer resb 30
-    arr resd 24 ; матрица (4 строки по 6 столбцов)
-    sums resd 6 ; массив вывода (6 столбцов)
+    input_buffer resb 10 
+    output_buffer resb 10
+    arr resw 24 ; матрица (4 строки по 6 столбцов)
+    sums resw 6 ; массив для сумм столбцов (6 столбцов)
 
 section .text
     global _start
@@ -46,7 +46,7 @@ input_loop:
     mov esi, input_buffer ; используем esi для передачи адреса буфера
     call StrToInt
     mov [edi], eax ; сохраняем число в массиве
-    add edi, 4 ; переход к следующему элементу
+    add edi, 2 ; переход к следующему элементу
 
     pop ecx ; восстанавливаем ecx
     loop input_loop
@@ -74,11 +74,10 @@ sum_row:
     jge store_sum
 
     ; Вычисляем адрес элемента
-    mov eax, edx ; копируем индекс строки
-    imul eax, 6 ; умножаем на количество столбцов
-    add eax, ecx ; добавляем индекс столбца (ecx)
-    dec eax ; корректируем индекс (так как ecx начинается с 1)
-    mov eax, [arr + eax * 4] ; загружаем элемент массива
+    mov ebx, edx ; копируем индекс строки
+    imul ebx, 6 ; умножаем на количество столбцов
+    add ebx, ecx ; добавляем индекс столбца (ecx)
+    mov eax, [arr + ebx * 2] ; загружаем элемент массива
 
     add [edi], eax ; добавляем к сумме столбца
 
@@ -110,14 +109,7 @@ print_array:
     mov eax, 4
     mov ebx, 1
     mov ecx, output_buffer
-    mov edx, eax ; Используем длину строки, возвращенную IntToStr
-    int 0x80
-
-    ; Печать новой строки
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, newline
-    mov edx, 1
+    mov edx, 10 ; Длина буфера вывода
     int 0x80
 
     add esi, 4
@@ -144,14 +136,7 @@ print_column_sums:
     mov eax, 4
     mov ebx, 1
     mov ecx, output_buffer
-    mov edx, eax ; Используем длину строки, возвращенную IntToStr
-    int 0x80
-
-    ; Печать новой строки
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, newline
-    mov edx, 1
+    mov edx, 10 ; Длина буфера вывода
     int 0x80
 
     add edi, 4

@@ -1,0 +1,29 @@
+SELECT * FROM public.teachers
+ORDER BY teacher_id ASC 
+ALTER TABLE Teachers
+DROP CONSTRAINT teachers_department_check;
+
+ALTER TABLE Teachers
+ADD CONSTRAINT teachers_department_check
+CHECK (department IN ('ИУ', 'БМТ', 'ИБМ', 'Э', 'РК', 'РЛ', 'МТ', 'СМ', 'ФН', 'Л'));
+
+ALTER TABLE Exams DISABLE TRIGGER trg_check_exam_date;
+
+ALTER TABLE Exams ENABLE TRIGGER trg_check_exam_date;
+
+ALTER TABLE Exams DISABLE TRIGGER trg_check_auditory_availability;
+
+ALTER TABLE Exams enable TRIGGER trg_check_auditory_availability;
+
+select count(*) from exams;
+select count(*) from students;
+select count(*) from auditories;
+select count(*) from examiners;
+select count(*) from groups;
+select count(*) from subjects;
+select count(*) from teachers;
+select count(*) from tickets;
+
+select * from tickets
+
+select * from exams
