@@ -1,4 +1,4 @@
-section .data 
+ection .data 
     prompt_a db "Enter a: ", 0
     prompt_g db "Enter g: ", 0
     prompt_c db "Enter c: ", 0
@@ -6,6 +6,8 @@ section .data
     prompt_m db "Enter m: ", 0
     res db "Result: ", 0
     lenRes equ $-res
+    exep db "Zero exeption!", 10
+    lenExep equ $-exep
 
 section .bss
     input_buffer resb 10 
@@ -20,7 +22,7 @@ section .bss
 section .text
     global _start
 
-%include "./lib.asm" ; либа с преобразованиями
+%include "./lib.asm" ;` либа с преобразованиями
 
 _start:
     ; Ввод значения a
@@ -40,6 +42,22 @@ _start:
     call StrToInt
     mov [a], eax
 
+    cmp dword[a],0 ; проверка a на ноль
+    jne inputs ; если не ноль, продолжаем
+
+    ; Вывод сообщения об ошибке
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, exep
+    mov edx, lenExep
+    int 0x80
+    
+    ; Завершение программы с ошибкой
+    mov eax, 1
+    mov ebx, 1
+    int 0x80
+
+inputs: ;продолжаем ввод
     ; Ввод значения g
     mov eax, 4
     mov ebx, 1
