@@ -1,4 +1,4 @@
- %include "./lib.asm" ; либа с функциями StrToInt и IntToStr
+%include "./lib.asm" ; либа с функциями StrToInt и IntToStr
 
 section .data
     sums dw 0,0,0,0,0,0 ; массив сумм
@@ -14,7 +14,7 @@ section .data
     output_buffer times 10 db 0  ; буфер для вывода
 
 section .bss
-    arr resw 24 ; массив 4х6
+    arr resw 1 ; массив 2х6
 
 section .text
 global _start
@@ -71,7 +71,7 @@ print_rows:
 print_cols:
     push ecx
     mov ax, [esi]
-    cwde ; чтобы выводить минус в отрицательных числах
+    movzx eax, ax
     mov edi, output_buffer
     call IntToStr
 
@@ -142,7 +142,7 @@ calc_sums:
 print_sums:
     push ecx
     mov ax, [esi]
-    cwde ; аналогично с минусами
+    movzx eax, ax
     mov edi, output_buffer
     call IntToStr
 
