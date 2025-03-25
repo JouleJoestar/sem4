@@ -1,102 +1,109 @@
-%include "./lib.asm" ; либа с функциями StrToInt и IntToStr
-
 section .data
-    sums dw 0,0,0,0,0,0 ; массив сумм
-    outArr db "Your array:", 10
-    lenOut equ $ - outArr
-    res db 10, "Columns sums:", 10
-    lenRes equ $ - res
-    space db " ", 0
-    newline db 10, 0
-    num_prompt db "Enter number: ", 0
-    len_num_prompt equ $ - num_prompt
-    input_buffer times 16 db 0   ; буфер для ввода
-    output_buffer times 10 db 0  ; буфер для вывода
+    words db "13asdedd", "00dsauda", "77mzyapr", "42bratuh", "43amigos", "01first1", "12banana", "41aloha_"
+    word_len equ 8       ; 2 цифры + 6 символов
+    words_count equ 8    ; 8 элементов
+    newline db 10
+    space db " "
 
 section .bss
-    arr resw 1 ; массив 2х6
+    sorted_words resb 64 ; 8 слов по 8 символов 
+    num1 resb 1
+    num2 resb 1
 
 section .text
 global _start
 
 _start:
-    ; Ввод 24 чисел
-    mov ecx, 24 ; регистр счётчик
-    mov edi, arr
+    mov esi, words
+    mov edi, sorted_words
+    mov ecx, 64
+    rep movsb
 
-input_loop:
+    ; пузырек
+    mov ecx, words_count
+    dec ecx
+
+outer_loop:
     push ecx
-    push edi
+    mov esi, sorted_words
+    mov edi, esi
+    add edi, word_len
 
-    ; Вывод приглашения
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, num_prompt
-    mov edx, len_num_prompt
-    int 0x80
+inner_loop:
+    ; Преобразуем первые два символа в число для сравнения
+    ; Первое число
+    mov al, [esi]        ; первая цифра
+    sub al, '0'
+    mov bl, [esi+1]      ; вторая цифра
+    sub bl, '0'
+    mov ah, 10
+    mul ah               ; al = 10 * первая цифра
+    add al, bl           ; al = полное число (0-99)
+    mov [num1], al
 
-    ; Чтение ввода
-    mov eax, 3
-    mov ebx, 0
-    mov ecx, input_buffer
-    mov edx, 16
-    int 0x80
+    ; Второе число
+    mov al, [edi]        ; первая цифра
+    sub al, '0'
+    mov bl, [edi+1]      ; вторая цифра
+    sub bl, '0'
+    mov ah, 10
+    mul ah               ; al = 10 * первая цифра
+    add al, bl           ; al = полное число (0-99)
+    mov [num2], al
 
-    ; Преобразование в число
-    mov esi, input_buffer
-    call StrToInt
+    ; Сравниваем числа
+    mov al, [num1]
+    cmp al, [num2]
+    jbe no_swap
 
-    ; Сохранение числа
-    pop edi
-    mov [edi], ax
-    add edi, 2
+    ; Обмен словами
+    push ecx
+    mov ecx, word_len
+swap_loop:
+    mov al, [esi]
+    mov bl, [edi]
+    mov [esi], bl
+    mov [edi], al
+    inc esi
+    inc edi
+    loop swap_loop
     pop ecx
-    loop input_loop
 
-    ; Вывод массива
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, outArr
-    mov edx, lenOut
-    int 0x80
+    sub esi, word_len
+    sub edi, word_len
 
-    ; Вывод 4 строк по 6 элементов
-    mov ecx, 4
-    mov esi, arr
+no_swap:
+    add esi, word_len
+    add edi, word_len
+    loop inner_loop
 
-print_rows:
-    push ecx
-    mov ecx, 6
-
-print_cols:
-    push ecx
-    mov ax, [esi]
-    movzx eax, ax
-    mov edi, output_buffer
-    call IntToStr
-
-    ; Вывод числа
-    push eax        ; сохраняем длину строки
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, output_buffer
-    pop edx         ; возвращаем длину из стека
-    int 0x80
-
-    ; Пробел между числами (кроме последнего)
     pop ecx
-    cmp ecx, 1
-    je .no_space
+    loop outer_loop
+
+    ; Вывод отсортированных слов
+    mov ecx, words_count
+    mov esi, sorted_words
+
+print_loop:
     push ecx
+    
+    ; Вывод слова
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, esi
+    mov edx, word_len
+    int 0x80
+    
+    ; Вывод пробела
     mov eax, 4
     mov ebx, 1
     mov ecx, space
     mov edx, 1
     int 0x80
+    
+    add esi, word_len
     pop ecx
-.no_space:
-    add esi, 2
-    loop print_cols
+    loop print_loop
 
     ; Перенос строки
     mov eax, 4
@@ -104,70 +111,6 @@ print_cols:
     mov ecx, newline
     mov edx, 1
     int 0x80
-
-    pop ecx
-    loop print_rows
-
-    ; Расчет сумм столбцов
-    mov ecx, 6
-    mov edi, sums
-    mov ebx, 0
-
-calc_sums:
-    xor eax, eax
-    mov dx, [arr + ebx]
-    add ax, dx
-    mov dx, [arr + ebx + 12]
-    add ax, dx
-    mov dx, [arr + ebx + 24]
-    add ax, dx
-    mov dx, [arr + ebx + 36]
-    add ax, dx
-    
-    mov [edi], ax
-    add edi, 2
-    add ebx, 2
-    loop calc_sums
-
-    ; Вывод сумм столбцов
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, res
-    mov edx, lenRes
-    int 0x80
-
-    mov ecx, 6
-    mov esi, sums
-
-print_sums:
-    push ecx
-    mov ax, [esi]
-    movzx eax, ax
-    mov edi, output_buffer
-    call IntToStr
-
-    ; Вывод суммы
-    push eax
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, output_buffer
-    pop edx
-    int 0x80
-
-    ; Пробел между суммами (кроме последней)
-    pop ecx
-    cmp ecx, 1
-    je .no_space_sum
-    push ecx
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, space
-    mov edx, 1
-    int 0x80
-    pop ecx
-.no_space_sum:
-    add esi, 2
-    loop print_sums
 
     ; Завершение программы
     mov eax, 1
