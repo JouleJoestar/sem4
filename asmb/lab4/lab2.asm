@@ -1,5 +1,4 @@
  %include "./lib.asm" ; либа с функциями StrToInt и IntToStr
-
 section .data
     sums dw 0,0,0,0,0,0 ; массив сумм
     outArr db "Your array:", 10
