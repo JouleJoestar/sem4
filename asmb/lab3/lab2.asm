@@ -1,9 +1,9 @@
-ection .data 
-    prompt_a db "Enter a: ", 0
-    prompt_g db "Enter g: ", 0
-    prompt_c db "Enter c: ", 0
-    prompt_k db "Enter k: ", 0
-    prompt_m db "Enter m: ", 0
+section .data 
+    ia db "Enter a: ", 0
+    ig db "Enter g: ", 0
+    ic db "Enter c: ", 0
+    ik db "Enter k: ", 0
+    im db "Enter m: ", 0
     res db "Result: ", 0
     lenRes equ $-res
     exep db "Zero exeption!", 10
@@ -28,7 +28,7 @@ _start:
     ; Ввод значения a
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_a
+    mov ecx, ia
     mov edx, 9
     int 0x80
 
@@ -61,7 +61,7 @@ inputs: ;продолжаем ввод
     ; Ввод значения g
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_g
+    mov ecx, ig
     mov edx, 9
     int 0x80
 
@@ -78,7 +78,7 @@ inputs: ;продолжаем ввод
     ; Ввод значения c
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_c
+    mov ecx, ic
     mov edx, 9
     int 0x80
 
@@ -95,7 +95,7 @@ inputs: ;продолжаем ввод
      ; Ввод значения k
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_k
+    mov ecx, ik
     mov edx, 9
     int 0x80
 
@@ -112,7 +112,7 @@ inputs: ;продолжаем ввод
  ; Ввод значения m
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_m
+    mov ecx, im
     mov edx, 9
     int 0x80
 
@@ -126,7 +126,6 @@ inputs: ;продолжаем ввод
     call StrToInt
     mov [m], eax
 
-    ;цикл
     mov eax, [g]
     cmp eax, [m]
     je con ; метка если m=g

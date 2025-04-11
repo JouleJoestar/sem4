@@ -1,9 +1,12 @@
 section .data 
-    prompt_a db "Enter a: ", 0
-    prompt_b db "Enter b: ", 0
-    prompt_d db "Enter d: ", 0
+    ina db "Enter a: ", 0
+    inb db "Enter b: ", 0
+    ind db "Enter d: ", 0
     res db "Result: ", 10
     lenRes equ $-res
+    exep db "Zero exception!", 10
+    lenExep equ $-exep
+
 
 section .bss
     input_buffer resb 10 
@@ -22,7 +25,7 @@ _start:
     ; Ввод значения a
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_a
+    mov ecx, ina
     mov edx, 9
     int 0x80
 
@@ -39,7 +42,7 @@ _start:
     ; Ввод значения b
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_b
+    mov ecx, inb
     mov edx, 9
     int 0x80
 
@@ -56,7 +59,7 @@ _start:
     ; Ввод значения d
     mov eax, 4
     mov ebx, 1
-    mov ecx, prompt_d
+    mov ecx, ind
     mov edx, 9
     int 0x80
 
@@ -70,6 +73,20 @@ _start:
     call StrToInt
     mov [d], eax
 
+    cmp dword[d],0
+    jne math
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,exep
+    mov edx,lenExep
+    int 0x80
+
+    mov eax,1
+    mov ebx,1
+    int 0x80
+
+math:
     ; Математика
     mov eax, [a]
     add eax, [b]
@@ -85,10 +102,10 @@ _start:
     sub ecx, [b]
     mov [c], ecx
 
-    ; Преобразование результата в строку
-    mov esi, output_buffer ; загрузка адреса буфера вывода 
-    mov eax, [c]          ; загрузка числа в регистр   
-    call IntToStr         ; вызов подпрограммы IntToStr
+    ; преобразование вывода
+    mov esi, output_buffer  
+    mov eax, [c]             
+    call IntToStr         
 
     mov eax, 4
     mov ebx, 1
