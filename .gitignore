@@ -3,6 +3,7 @@
 *.png
 *.pdf
 *.bkp
+*.ods
 
 # Игнорировать файлы сборки в папке bin
 trps/lab1/bin/
