@@ -5,7 +5,7 @@ BIN       := bin
 LIBRARIES := 
 EXECUTABLE := main
 
-SOURCES := $(wildcard *.cpp)
+SOURCES := $(wildcard *.c)
 HEADERS  := $(wildcard *.h)
 
 all: $(BIN)/$(EXECUTABLE)
