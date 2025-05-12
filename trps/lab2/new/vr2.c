@@ -20,7 +20,7 @@ int main() {
     }
 
     srand(time(NULL));
-    bool used[101] = {false}; // Хеш-таблица для диапазона -50..50
+    bool used[101] = {false}; // хеш-таблица на (-50,50)
 
     long long gen_start = get_time_usec();
 
@@ -31,13 +31,6 @@ int main() {
         } while (used[val + 50]);
         used[val + 50] = true;
         a[i] = val;
-    }
-
-    printf("\nВычисление сумм пар:\n");
-    for (int i = 0; i < N / 2; i++) {
-        int sum = a[i] + a[N - 1 - i];
-        printf("a[%d] + a[%d] = %d + %d = %d\n", 
-               i, N - 1 - i, a[i], a[N - 1 - i], sum);
     }
 
     long long gen_end = get_time_usec();
